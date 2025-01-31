@@ -119,7 +119,7 @@ public class BoardManager : NetworkBehaviour
 
         CheckForCombination(clickedTile, currentTurn.Value);
 
-        
+        CheckForDraw();
         
         ChangeTurn();
     }

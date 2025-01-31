@@ -11,7 +11,7 @@ public class BoardTile : MonoBehaviour
 
     public void OnMouseDown()
     {
-        Debug.Log("Clicked tile "+position.ToString());
+        //Debug.Log("Clicked tile "+position.ToString());
         BoardManager.OnClickTile?.Invoke(this);
     }
 
