@@ -63,4 +63,9 @@ public class GameoverPopup : MonoBehaviour
       
       SceneManager.LoadScene("MainMenu");
    }
+
+   public void QuitBtnClicked()
+   {
+      StartCoroutine(WaitAndCloseGameOverPopup());
+   }
 }
