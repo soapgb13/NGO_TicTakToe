@@ -8,4 +8,6 @@ public static class GameEvents
     public static Action<BoardTile> OnClickTile;
     public static  Action<TileOwnerType, List<Vector2Int>> OnDeclareWinnerTiles;
     public static  Action<TileOwnerType> OnGameOver;
+    
+    public static Action<ulong> TerminateGame;
 }

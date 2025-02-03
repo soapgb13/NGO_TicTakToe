@@ -13,6 +13,8 @@ public enum TileOwnerType
 
 public class BoardManager : NetworkBehaviour
 {
+    public static BoardManager Instance;
+    
     private const int RequiredSequenceForWin = 3;
 
     [Header("Board Settings")]
@@ -25,13 +27,34 @@ public class BoardManager : NetworkBehaviour
 
     public NetworkVariable<TileOwnerType> currentTurn = new NetworkVariable<TileOwnerType>(
         TileOwnerType.Host, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    
+    public bool isGameOver = false;
+    public bool isQuitGame = false;
 
-    // public static event Action<TileOwnerType> OnCurrentTurnUpdated;
-    // public static Action<BoardTile> OnClickTile;
-    // public static event Action<TileOwnerType, List<Vector2Int>> OnDeclareWinnerTiles;
-    // public static event Action<TileOwnerType> OnGameOver;
+    public void Awake()
+    {
+        Instance = this;
+    }
 
-    private bool isGameOver = false;
+    private void OnEnable()
+    {
+        Unity.Netcode.NetworkManager.Singleton.OnClientDisconnectCallback += TerminateGameOnClientOrHostDisconnect;
+    }
+    
+    public override void OnDestroy()
+    {
+        GameEvents.OnClickTile -= OnCurrentTurnPlayerAction;
+        currentTurn.OnValueChanged -= OnTurnEndValueUpdated;
+        
+        Unity.Netcode.NetworkManager.Singleton.OnClientDisconnectCallback -= TerminateGameOnClientOrHostDisconnect;
+        
+        base.OnDestroy();
+    }
+    
+    private void TerminateGameOnClientOrHostDisconnect(ulong clientId)
+    {
+        GameEvents.TerminateGame?.Invoke(clientId);
+    }
 
     private void Start()
     {
@@ -60,12 +83,7 @@ public class BoardManager : NetworkBehaviour
         GameEvents.OnCurrentTurnUpdated?.Invoke(newValue);
     }
 
-    public override void OnDestroy()
-    {
-        GameEvents.OnClickTile -= OnCurrentTurnPlayerAction;
-        currentTurn.OnValueChanged -= OnTurnEndValueUpdated;
-        base.OnDestroy();
-    }
+    
 
     private void InitializeBoard()
     {

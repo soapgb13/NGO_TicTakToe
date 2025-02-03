@@ -66,6 +66,7 @@ public class GameoverPopup : MonoBehaviour
 
    public void QuitBtnClicked()
    {
+      BoardManager.Instance.isQuitGame = true;
       StartCoroutine(WaitAndCloseGameOverPopup());
    }
 }
