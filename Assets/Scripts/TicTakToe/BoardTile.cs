@@ -12,7 +12,7 @@ public class BoardTile : MonoBehaviour
     public void OnMouseDown()
     {
         //Debug.Log("Clicked tile "+position.ToString());
-        BoardManager.OnClickTile?.Invoke(this);
+        GameEvents.OnClickTile?.Invoke(this);
     }
 
     public void SetCurrentOwner(TileOwnerType state)

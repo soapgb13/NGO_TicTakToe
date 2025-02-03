@@ -9,18 +9,16 @@ public class TurnNameUpdater : MonoBehaviour
 
     private void OnEnable()
     {
-        BoardManager.OnCurrentTurnUpdated += UpdateName;
-        Debug.Log($"TurnNameUpdater subscribe to OnCurrentTurnUpdated!");
+        GameEvents.OnCurrentTurnUpdated += UpdateName;
     }
 
     private void OnDestroy()
     {
-        BoardManager.OnCurrentTurnUpdated -= UpdateName;
+        GameEvents.OnCurrentTurnUpdated -= UpdateName;
     }
 
     private void UpdateName(TileOwnerType owner)
     {
-        Debug.Log($"TurnNameUpdater UpdateName "+owner);
         nameText.text = owner.ToString();
     }
 }

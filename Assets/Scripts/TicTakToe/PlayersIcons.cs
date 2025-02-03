@@ -19,12 +19,12 @@ public class PlayersIcons : MonoBehaviour
     
     private void OnEnable()
     {
-        BoardManager.OnDeclareWinnerTiles += IsInWinLine;
+        GameEvents.OnDeclareWinnerTiles += IsInWinLine;
     }
 
     private void OnDestroy()
     {
-        BoardManager.OnDeclareWinnerTiles -= IsInWinLine;
+        GameEvents.OnDeclareWinnerTiles -= IsInWinLine;
     }
 
     public void IsInWinLine(TileOwnerType winner, List<Vector2Int> winPositions)

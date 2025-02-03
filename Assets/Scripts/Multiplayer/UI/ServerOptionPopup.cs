@@ -19,6 +19,7 @@ public class ServerOptionPopup : MonoBehaviour
     
     public void OnClickHostGame()
     {
+        
         if (NetworkManager.Singleton.StartHost())
         {
             NetworkManager.Singleton.OnClientConnectedCallback += ActionOnClientConnected;

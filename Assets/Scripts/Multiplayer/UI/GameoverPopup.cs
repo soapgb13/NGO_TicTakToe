@@ -18,12 +18,12 @@ public class GameoverPopup : MonoBehaviour
    
    public void OnEnable()
    {
-      BoardManager.OnGameOver += OnGameOverAction;
+      GameEvents.OnGameOver += OnGameOverAction;
    }
 
    private void OnDestroy()
    {
-      BoardManager.OnGameOver -= OnGameOverAction;
+      GameEvents.OnGameOver -= OnGameOverAction;
    }
 
 
