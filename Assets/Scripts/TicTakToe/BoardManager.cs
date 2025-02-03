@@ -38,7 +38,8 @@ public class BoardManager : NetworkBehaviour
 
     private void OnEnable()
     {
-        Unity.Netcode.NetworkManager.Singleton.OnClientDisconnectCallback += TerminateGameOnClientOrHostDisconnect;
+        if(NetworkManager.Singleton != null)
+            NetworkManager.Singleton.OnClientDisconnectCallback += TerminateGameOnClientOrHostDisconnect;
     }
     
     public override void OnDestroy()
@@ -46,7 +47,8 @@ public class BoardManager : NetworkBehaviour
         GameEvents.OnClickTile -= OnCurrentTurnPlayerAction;
         currentTurn.OnValueChanged -= OnTurnEndValueUpdated;
         
-        Unity.Netcode.NetworkManager.Singleton.OnClientDisconnectCallback -= TerminateGameOnClientOrHostDisconnect;
+        if(NetworkManager.Singleton != null)
+            NetworkManager.Singleton.OnClientDisconnectCallback -= TerminateGameOnClientOrHostDisconnect;
         
         base.OnDestroy();
     }
@@ -134,7 +136,8 @@ public class BoardManager : NetworkBehaviour
         _tilesDict[boardTile.GetPosition()] = currentTurn.Value;
 
         var iconPrefab = currentTurn.Value == TileOwnerType.Host ? hostIconPrefab : clientIconPrefab;
-        Instantiate(iconPrefab, boardTile.transform.position, Quaternion.identity);
+        PlayersIcons spawnedIcon = Instantiate(iconPrefab, boardTile.transform.position, Quaternion.identity);
+        spawnedIcon.Setup(boardTile.GetPosition());
     }
 
     private void ChangeTurn()
