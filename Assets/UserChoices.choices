@@ -23,14 +23,14 @@ MonoBehaviour:
       - CheatingNotImportant
     - QuestionId: CostSensitivity
       Answers:
-      - BestMargin
+      - NoCost
     - QuestionId: NetcodeArchitecture
       Answers:
       - ClientServer
     - QuestionId: PlayerCount
       Answers:
-      - 2
-  Preset: 11
+      - 4
+  Preset: 9
   SelectedSolutions:
-    SelectedHostingModel: 4
+    SelectedHostingModel: 1
     SelectedNetcodeSolution: 1
