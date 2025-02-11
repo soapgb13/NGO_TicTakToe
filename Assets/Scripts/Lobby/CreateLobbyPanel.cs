@@ -20,7 +20,8 @@ public class CreateLobbyPanel : MonoBehaviour
 
    public void OnClickCreateLobby()
    {
-      _ = CreateLobby();
+      Task createLobbyTask = CreateLobby();
+      
    }
    
    
