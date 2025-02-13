@@ -1,48 +1,51 @@
+using System;
 using System.Collections.Generic;
+using Multiplayer;
 using Unity.Netcode;
+using Unity.Services.Lobbies.Models;
 using UnityEngine;
 
 public class LobbyManager : MonoBehaviour
 {
-    private Dictionary<string, GameSession> gameSessions = new Dictionary<string, GameSession>();
+    [SerializeField] private GameObject lobbyCreateAndFindUI;
+    [SerializeField] private GameObject joinedLobbyUI;
+    [SerializeField] private LobbyInfoPanel lobbyInfoPanel;
 
-    public void CreateGameSession(string sessionId)
+    private void OnEnable()
     {
-        if (!gameSessions.ContainsKey(sessionId))
-        {
-            GameSession newSession = new GameSession(sessionId);
-            gameSessions.Add(sessionId, newSession);
-            newSession.StartHost();
-        }
+        MultiplayerEvents.JoinLobby += OnPlayerJoinLobby;
+        MultiplayerEvents.LeaveLobby += OnPlayerLeaveLobby;
+    }
+    
+    private void OnDisable()
+    {
+        MultiplayerEvents.JoinLobby -= OnPlayerJoinLobby;
+        MultiplayerEvents.LeaveLobby -= OnPlayerLeaveLobby;
     }
 
-    public void JoinGameSession(string sessionId)
+
+    private void OnPlayerJoinLobby(Lobby lobby)
     {
-        if (gameSessions.ContainsKey(sessionId))
-        {
-            gameSessions[sessionId].StartClient();
-        }
+        lobbyInfoPanel.AssignLobbyToPanel(lobby);
+        ShowJoinedLobbyUI();
+        lobbyInfoPanel.StartLobbyHeartBeats();
     }
-}
-
-public class GameSession
-{
-    private string sessionId;
-    private NetworkManager networkManager;
-
-    public GameSession(string id)
+    
+    private void OnPlayerLeaveLobby()
     {
-        sessionId = id;
-        networkManager = new NetworkManager(); // Create a new instance or configure an existing one
+        ShowCreateLobbyUI();
+        lobbyInfoPanel.RemoveLobbyFromPanel();
     }
 
-    public void StartHost()
+    public void ShowCreateLobbyUI()
     {
-        networkManager.StartHost();
+        lobbyCreateAndFindUI.SetActive(true);
+        joinedLobbyUI.SetActive(false);
     }
 
-    public void StartClient()
+    public void ShowJoinedLobbyUI()
     {
-        networkManager.StartClient();
+        joinedLobbyUI.SetActive(true);
+        lobbyCreateAndFindUI.SetActive(false);
     }
 }

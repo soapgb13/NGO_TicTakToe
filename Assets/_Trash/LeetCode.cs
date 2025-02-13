@@ -82,8 +82,6 @@ public class LeetCode : MonoBehaviour
 
         int[] solution = new int[2];
 
-        int sum = 0;
-
         Dictionary<int, int> dict = new Dictionary<int, int>();
 
         for (int i = 0; i < nums.Length - 1; i++)

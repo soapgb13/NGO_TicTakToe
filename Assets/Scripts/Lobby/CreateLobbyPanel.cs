@@ -1,6 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Common;
+using Multiplayer;
 using TMPro;
+using Unity.Netcode;
+using Unity.Services.Authentication;
 using Unity.Services.Core;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
@@ -12,11 +17,7 @@ public class CreateLobbyPanel : MonoBehaviour
    [SerializeField] private TMP_InputField nameInputField;
    [SerializeField] private Button createLobbyButton;
 
-
-   private void Start()
-   {
-      
-   }
+   
 
    public void OnClickCreateLobby()
    {
@@ -34,15 +35,26 @@ public class CreateLobbyPanel : MonoBehaviour
          Debug.LogError("Cant Have Empty Name");
          return;
       }
-
-      int maxPlayer = 4;
-      CreateLobbyOptions options = new CreateLobbyOptions();
-      options.IsPrivate = false;
+      
       try
       {
+         int maxPlayer = 4;
+         CreateLobbyOptions options = new CreateLobbyOptions();
+         options.IsPrivate = false;
+
+         Player player = new Player(AuthenticationService.Instance.PlayerId,joined:DateTime.Now)
+         {
+            Data = new Dictionary<string, PlayerDataObject>
+            {
+               { ConstKeys.PlayerName, new PlayerDataObject(PlayerDataObject.VisibilityOptions.Public,AuthenticationService.Instance.PlayerName) }
+            }
+         };
+
+         options.Player = player;
+         
          Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayer, options);
          Debug.Log($"Created lobby {lobby.Name} ! Lobby code {lobby.LobbyCode}");
-
+         MultiplayerEvents.OnJoinLobby(lobby);
       }
       catch (Exception e)
       {

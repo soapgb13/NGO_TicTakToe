@@ -18,6 +18,11 @@ public class LobbyListPanel : MonoBehaviour
     }
 
     [ContextMenu("Refresh lobbies")]
+    public void RefreshLobbiesListBtnClicked()
+    {
+        _ = RefreshLobbies();
+    }
+
     private async Task RefreshLobbies()
     {
         QueryLobbiesOptions options = new QueryLobbiesOptions();

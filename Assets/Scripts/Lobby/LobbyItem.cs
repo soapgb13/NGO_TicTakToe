@@ -1,5 +1,10 @@
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Common;
+using Multiplayer;
 using TMPro;
+using Unity.Services.Authentication;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
@@ -25,12 +30,24 @@ public class LobbyItem : MonoBehaviour
     {
         try
         {
-            Lobby joinedLobby = await LobbyService.Instance.JoinLobbyByIdAsync(_lobby.Id);
-            Debug.Log("You Joined Lobby "+joinedLobby.Name);
+            
+            Player player = new Player(AuthenticationService.Instance.PlayerId,joined:DateTime.Now)
+            {
+                Data = new Dictionary<string, PlayerDataObject>
+                {
+                    { ConstKeys.PlayerName, new PlayerDataObject(PlayerDataObject.VisibilityOptions.Public,AuthenticationService.Instance.PlayerName) }
+                }
+            };
+            
+            JoinLobbyByIdOptions options = new JoinLobbyByIdOptions();
+            options.Player = player;
+            
+            Lobby joinedLobby = await LobbyService.Instance.JoinLobbyByIdAsync(_lobby.Id,options);
+            MultiplayerEvents.OnJoinLobby(joinedLobby);
         }
         catch (LobbyServiceException e)
         {
-            Debug.Log(e);
+            Debug.LogError(e);
         }
     }
 }
