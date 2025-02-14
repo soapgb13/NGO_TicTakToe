@@ -46,7 +46,8 @@ public class CreateLobbyPanel : MonoBehaviour
          {
             Data = new Dictionary<string, PlayerDataObject>
             {
-               { ConstKeys.PlayerName, new PlayerDataObject(PlayerDataObject.VisibilityOptions.Public,AuthenticationService.Instance.PlayerName) }
+               { ConstKeys.PlayerName, new PlayerDataObject(PlayerDataObject.VisibilityOptions.Public,AuthenticationService.Instance.PlayerName) },
+               { ConstKeys.ReadyState, new PlayerDataObject(PlayerDataObject.VisibilityOptions.Public,ConstKeys.NotReadyValue) }
             }
          };
 

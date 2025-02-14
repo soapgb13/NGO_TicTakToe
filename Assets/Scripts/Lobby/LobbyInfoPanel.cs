@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Common;
 using Multiplayer;
 using TMPro;
 using Unity.Services.Authentication;
@@ -97,6 +98,11 @@ public class LobbyInfoPanel : MonoBehaviour
         for (int i = 0; i < currentLobby.Players.Count; i++)
         {
             Player player = currentLobby.Players[i];
+
+            if (player.Id == AuthenticationService.Instance.PlayerId)
+            {
+                Debug.Log($"Player index {i}.");
+            }
             
             LobbyPlayerCard newPlayerCard = Instantiate(lobbyPlayerCardPrefab, lobbyListContent);
             newPlayerCard.SetData(player, currentLobby.HostId == player.Id); 
@@ -114,6 +120,8 @@ public class LobbyInfoPanel : MonoBehaviour
             lobbyEventCallbacks = new LobbyEventCallbacks(); 
             lobbyEventCallbacks.PlayerJoined += OnLobbyPlayerAdded;
             lobbyEventCallbacks.PlayerLeft += OnLobbyPlayerLeft;
+            lobbyEventCallbacks.PlayerDataChanged += OnLobbyPlayerDataChanged;
+            lobbyEventCallbacks.LobbyChanged += OnLobbyDataChanged;
             
             await LobbyService.Instance.SubscribeToLobbyEventsAsync(lobby.Id,lobbyEventCallbacks);
         }
@@ -122,13 +130,24 @@ public class LobbyInfoPanel : MonoBehaviour
             Debug.LogError($"Failed to subscribe to lobby events: {e.Message}");
         }
     }
-    
+
+  
+
     public void UnsubscribeFromLobbyEvents()
     {
         lobbyEventCallbacks.PlayerJoined -= OnLobbyPlayerAdded;
         lobbyEventCallbacks.PlayerLeft -= OnLobbyPlayerLeft;
-    }
+        lobbyEventCallbacks.PlayerDataChanged -= OnLobbyPlayerDataChanged;
+        lobbyEventCallbacks.LobbyChanged -= OnLobbyDataChanged;
 
+        lobbyEventCallbacks = null;
+    }
+    
+    private void OnLobbyDataChanged(ILobbyChanges lobbyChanges)
+    {
+        lobbyChanges.ApplyToLobby(currentLobby);
+    }
+    
     private void OnLobbyPlayerLeft(List<int> playerRemovedIndex)
     {
         foreach (var playerIndex in playerRemovedIndex)
@@ -145,8 +164,9 @@ public class LobbyInfoPanel : MonoBehaviour
         }
         
         UpdatePlayerCount();
+        CheckIfNeedToUpdateHostCardView();
     }
-
+    
     private void OnLobbyPlayerAdded(List<LobbyPlayerJoined> newPlayers)
     {
         foreach (var newAddedPlayer in newPlayers)
@@ -170,6 +190,24 @@ public class LobbyInfoPanel : MonoBehaviour
         UpdatePlayerCount();
     }
 
+    private void CheckIfNeedToUpdateHostCardView()
+    {
+        foreach (var card in lobbyPlayerCards)
+        {
+            if (currentLobby.HostId == card.Value.GetPlayer().Id)
+            {
+                card.Value.UpdateHostStatus(true);
+                break;
+            }
+        }
+        
+        if (currentLobby.HostId == AuthenticationService.Instance.PlayerId && !isHostOfLobby)
+        {
+            isHostOfLobby = true;
+            StartLobbyHeartBeats();
+        }
+    }
+
     private void UpdatePlayerCount()
     {
         joinedPlayerCountText.text = $"Player Count : {currentLobby.Players.Count}/{currentLobby.MaxPlayers}";
@@ -177,25 +215,57 @@ public class LobbyInfoPanel : MonoBehaviour
 
     public void OnClickLeaveLobbyBtn()
     {
-        if (!isHostOfLobby)
+        LobbyService.Instance.RemovePlayerAsync(currentLobby.Id,AuthenticationService.Instance.PlayerId);
+        
+        if (isHostOfLobby)
         {
-            LobbyService.Instance.RemovePlayerAsync(currentLobby.Id,AuthenticationService.Instance.PlayerId);
-            MultiplayerEvents.OnLeaveLobby();
+            StopCoroutine(heartbeatCoroutine);
+            isHostOfLobby = false;
         }
-        else
-        {
-            Debug.LogError("Cant leave you are host!");
-        }
+        
+        MultiplayerEvents.OnLeaveLobby();
     }
 
     public void OnClickToggleStatusBtn()
     {
-        SetReadyStatusButtonView(!isReady);
+        readyStatusButton.interactable = false;
+        SetPlayerReadyStatus(!isReady);
+    }
+
+    private async void SetPlayerReadyStatus(bool status)
+    {
+        try
+        {
+            isReady = status;
+            SetReadyStatusButtonView(isReady);
+
+            UpdatePlayerOptions updatedValue = new UpdatePlayerOptions();
+            updatedValue.Data = new Dictionary<string, PlayerDataObject>()
+            {
+                { ConstKeys.ReadyState, new PlayerDataObject(PlayerDataObject.VisibilityOptions.Public, isReady ? ConstKeys.ReadyValue : ConstKeys.NotReadyValue) }
+            };
+            
+            await LobbyService.Instance.UpdatePlayerAsync(currentLobby.Id, AuthenticationService.Instance.PlayerId, updatedValue);
+
+            foreach (var card in lobbyPlayerCards)
+            {
+                if (card.Value.GetPlayer().Id == AuthenticationService.Instance.PlayerId)
+                {
+                    card.Value.ReadyStatus(isReady);
+                    break;
+                }
+            }
+            
+            readyStatusButton.interactable = true;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e);
+        }
     }
 
     private void SetReadyStatusButtonView(bool status)
     {
-        isReady = status;
 
         if (isReady)
         {
@@ -206,6 +276,27 @@ public class LobbyInfoPanel : MonoBehaviour
         {
             readyStatusButton.image.sprite = notReadySprite;
             readyStatusText.text = "Not Ready";
+        }
+    }
+    
+    //need to implement this
+    private void OnLobbyPlayerDataChanged(Dictionary<int, Dictionary<string, ChangedOrRemovedLobbyValue<PlayerDataObject>>> updatedPlayers)
+    {
+        try
+        {
+            foreach (var updatedValue in updatedPlayers)
+            {
+                //for updating ready status
+                if (updatedValue.Value.TryGetValue(ConstKeys.ReadyState, out var readyValue))
+                {
+                    bool isReady = readyValue.Value.Value == ConstKeys.ReadyValue;
+                    lobbyPlayerCards[updatedValue.Key].ReadyStatus(isReady);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e);
         }
     }
 

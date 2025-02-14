@@ -1,5 +1,80 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1612414120081738040
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 339176710753874512}
+  - component: {fileID: 8463570889252974974}
+  - component: {fileID: 7074664196696321277}
+  m_Layer: 5
+  m_Name: ReadyTick
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &339176710753874512
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1612414120081738040}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1.25, y: 1.25, z: 1.25}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 3851138227144014019}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 1, y: 0.5}
+  m_AnchorMax: {x: 1, y: 0.5}
+  m_AnchoredPosition: {x: -26, y: 0}
+  m_SizeDelta: {x: 64, y: 64}
+  m_Pivot: {x: 1, y: 0.5}
+--- !u!222 &8463570889252974974
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1612414120081738040}
+  m_CullTransparentMesh: 1
+--- !u!114 &7074664196696321277
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1612414120081738040}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 3891600515180865987, guid: b57cb885b1f284203880ca13ceb99d91, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &3411507417214347713
 GameObject:
   m_ObjectHideFlags: 0
@@ -32,6 +107,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7047568609740299325}
+  - {fileID: 339176710753874512}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -90,7 +166,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   nameText: {fileID: 6916295115117744245}
-  roleText: {fileID: 0}
+  tabImage: {fileID: 8424140135725674028}
+  defaultSprite: {fileID: 21300000, guid: f736e0de4210240f392660664f067e15, type: 3}
+  hostSprite: {fileID: 21300000, guid: 3dc718f2069d142639524445be5d4df7, type: 3}
+  readyImage: {fileID: 7074664196696321277}
+  readySprite: {fileID: 3891600515180865987, guid: b57cb885b1f284203880ca13ceb99d91, type: 3}
+  notReadySprite: {fileID: 7575186650473386383, guid: 6db67f70b69ee4730b99b2150ec1c6f4, type: 3}
 --- !u!1 &5250791452467569528
 GameObject:
   m_ObjectHideFlags: 0
@@ -123,11 +204,11 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 3851138227144014019}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 600, y: 90}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0.5}
+  m_AnchorMax: {x: 0, y: 0.5}
+  m_AnchoredPosition: {x: 20.1736, y: 0}
+  m_SizeDelta: {x: 533.6618, y: 90}
+  m_Pivot: {x: 0, y: 0.5}
 --- !u!222 &2691374133514223155
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -156,7 +237,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Player XYZ : Host'
+  m_text: 'Player XYZ '
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 9cd0dcd297bf94a708eb8a53e4445278, type: 2}
   m_sharedMaterial: {fileID: 2105746449761882092, guid: 9cd0dcd297bf94a708eb8a53e4445278, type: 2}
