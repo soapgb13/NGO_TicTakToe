@@ -40,7 +40,8 @@ public class LobbyInfoPanel : MonoBehaviour
     
     public void AssignLobbyToPanel(Lobby lobby)
     {
-        SetReadyStatusButtonView(false);
+        isReady = false;
+        SetReadyStatusButtonView(isReady);
         
         currentLobby = lobby;
 
@@ -102,6 +103,13 @@ public class LobbyInfoPanel : MonoBehaviour
         {
             Player player = currentLobby.Players[i];
 
+            Debug.Log($"Player Data Reading : {player.Id}");
+            
+            foreach (var playerData in player.Data)
+            {
+                Debug.Log($"player Data : {playerData.Key} : {playerData.Value.Value}");
+            }
+            
             if (player.Id == AuthenticationService.Instance.PlayerId)
             {
                 Debug.Log($"Player index {i}.");
@@ -248,7 +256,20 @@ public class LobbyInfoPanel : MonoBehaviour
 
     public void OnClickLeaveLobbyBtn()
     {
-        LobbyService.Instance.RemovePlayerAsync(currentLobby.Id,AuthenticationService.Instance.PlayerId);
+        LeaveLobbyAsync();
+    }
+
+    private async void LeaveLobbyAsync()
+    {
+        try
+        {
+            await LobbyService.Instance.RemovePlayerAsync(currentLobby.Id,AuthenticationService.Instance.PlayerId);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("Error Leaving lobby :"+e);
+            throw;
+        }
         
         if (isHostOfLobby)
         {
@@ -337,7 +358,7 @@ public class LobbyInfoPanel : MonoBehaviour
 
                 foreach (var changes in updatedValue.Value)
                 {
-                    Debug.Log($"OnLobbyPlayerDataChanged data : key {changes.Key} : value {changes.Value.Value}");
+                    Debug.Log($"OnLobbyPlayerDataChanged data : key {changes.Key} : value {changes.Value.Value.Value}");
                 }
                 
                 if (updatedValue.Value.TryGetValue(ConstKeys.ReadyState, out var readyValue))
@@ -349,7 +370,7 @@ public class LobbyInfoPanel : MonoBehaviour
         }
         catch (Exception e)
         {
-            Debug.LogError(e);
+            Debug.LogError("OnLobbyPlayerDataChanged Error :"+e);
         }
     }
 
