@@ -11,25 +11,12 @@ public class LobbyListPanel : MonoBehaviour
     [SerializeField] private Transform spawnContent;
 
     private List<LobbyItem> spawnedLobbies = new List<LobbyItem>();
-    
-    private bool isLobbyUpdating = false;
-    
-    private void Start()
-    {
-        if(!isLobbyUpdating)
-            _ = RefreshLobbies();
-    }
 
-    private void OnEnable()
-    {
-        if(!isLobbyUpdating)
-            _ = RefreshLobbies();
-    }
+    // private void OnEnable()
+    // {
+    //     _ = RefreshLobbies();
+    // }
 
-    private void OnDisable()
-    {
-        isLobbyUpdating = false;
-    }
 
     [ContextMenu("Refresh lobbies")]
     public void RefreshLobbiesListBtnClicked()
@@ -41,30 +28,27 @@ public class LobbyListPanel : MonoBehaviour
     {
         try
         {
-            isLobbyUpdating = true;
 
             foreach (var preLobby in spawnedLobbies)
             {
                 Destroy(preLobby.gameObject);
             }
-            
+
             QueryLobbiesOptions options = new QueryLobbiesOptions();
-        
+
             QueryResponse lobbies = await LobbyService.Instance.QueryLobbiesAsync(options);
 
             foreach (var lobby in lobbies.Results)
             {
                 LobbyItem newLobby = Instantiate(lobbyItemPrefab, spawnContent);
-                newLobby.SetLobby(lobby,this);
+                newLobby.SetLobby(lobby, this);
                 spawnedLobbies.Add(newLobby);
             }
-            
-            isLobbyUpdating = false;
+
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
-            isLobbyUpdating = false;
             throw;
         }
     }

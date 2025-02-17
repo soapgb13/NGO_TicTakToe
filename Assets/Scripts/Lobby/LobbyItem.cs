@@ -34,22 +34,22 @@ public class LobbyItem : MonoBehaviour
         try
         {
 
-            bool isLobbyExits = await DoesLobbyExist(_lobby.Id);
-            if (!isLobbyExits)
-            {
-                Debug.LogError("Lobby is null , Removing it");
-                _lobbyListPanel.RemoveLobby(this);
-                return;
-            }
-            
-            Lobby clickedLobby = await LobbyService.Instance.GetLobbyAsync(_lobby.Id);
-            if (clickedLobby.Players.Count >= clickedLobby.MaxPlayers)
-            {
-                Debug.LogError("Max players Already in Lobby Cant join!");
-                return;
-            }
-
-            _lobby = clickedLobby;
+            // bool isLobbyExits = await DoesLobbyExist(_lobby.Id);
+            // if (!isLobbyExits)
+            // {
+            //     Debug.LogError("Lobby is null , Removing it");
+            //     _lobbyListPanel.RemoveLobby(this);
+            //     return;
+            // }
+            //
+            // Lobby clickedLobby = await LobbyService.Instance.GetLobbyAsync(_lobby.Id);
+            // if (clickedLobby.Players.Count >= clickedLobby.MaxPlayers)
+            // {
+            //     Debug.LogError("Max players Already in Lobby Cant join!");
+            //     return;
+            // }
+            //
+            // _lobby = clickedLobby;
             
             Player player = new Player(AuthenticationService.Instance.PlayerId,joined:DateTime.Now)
             {
@@ -73,7 +73,7 @@ public class LobbyItem : MonoBehaviour
         catch (Exception e)
         {
             Debug.LogError("Error Joining Lobby :"+e);
-            LobbyServiceException lobbyServiceException = new LobbyServiceException(e);
+            LobbyServiceException lobbyServiceException = e as LobbyServiceException;
             Debug.LogError("Lobby Join Fail Reason "+lobbyServiceException.Reason);
         }
     }

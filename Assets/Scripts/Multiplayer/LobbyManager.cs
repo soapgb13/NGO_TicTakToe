@@ -35,8 +35,7 @@ public class LobbyManager : MonoBehaviour
     
     private void OnPlayerLeaveLobby()
     {
-        ShowCreateLobbyUI();
-        lobbyInfoPanel.RemoveLobbyFromPanel();
+        lobbyInfoPanel.UnsubscribeFromLobbyEvents(ShowCreateLobbyUI);
     }
 
     public void ShowCreateLobbyUI()

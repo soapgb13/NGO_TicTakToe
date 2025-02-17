@@ -37,7 +37,9 @@ public class LobbyInfoPanel : MonoBehaviour
     private Coroutine heartbeatCoroutine;
     private const float HeartbeatIntervalInSecond = 15f;
     private bool isReady = false;
-    
+    private ILobbyEvents subscriberHolder;
+
+
     public void AssignLobbyToPanel(Lobby lobby)
     {
         isReady = false;
@@ -53,12 +55,6 @@ public class LobbyInfoPanel : MonoBehaviour
         
         _ = SubscribeToLobbyEvents(lobby);
     }
-
-    public void RemoveLobbyFromPanel()
-    {
-        UnsubscribeFromLobbyEvents();
-    }
-    
 
     public void StartLobbyHeartBeats()
     {
@@ -136,7 +132,7 @@ public class LobbyInfoPanel : MonoBehaviour
             lobbyEventCallbacks.PlayerDataChanged += OnLobbyPlayerDataChanged;
             lobbyEventCallbacks.LobbyChanged += OnLobbyDataChanged;
             
-            await LobbyService.Instance.SubscribeToLobbyEventsAsync(lobby.Id,lobbyEventCallbacks);
+            subscriberHolder = await LobbyService.Instance.SubscribeToLobbyEventsAsync(lobby.Id,lobbyEventCallbacks);
         }
         catch (Exception e)
         {
@@ -146,18 +142,22 @@ public class LobbyInfoPanel : MonoBehaviour
 
   
 
-    public void UnsubscribeFromLobbyEvents()
+    public async void UnsubscribeFromLobbyEvents(Action onUnsubscribeSuccessAction)
     {
         Debug.Log("Unsubscribing from lobby events.");
         
         try
         {
+            await subscriberHolder.UnsubscribeAsync();
+            
             lobbyEventCallbacks.PlayerJoined -= OnLobbyPlayerAdded;
             lobbyEventCallbacks.PlayerLeft -= OnLobbyPlayerLeft;
             lobbyEventCallbacks.PlayerDataChanged -= OnLobbyPlayerDataChanged;
             lobbyEventCallbacks.LobbyChanged -= OnLobbyDataChanged;
 
             lobbyEventCallbacks = null;
+            
+            onUnsubscribeSuccessAction?.Invoke();
         }
         catch (Exception e)
         {
@@ -210,6 +210,8 @@ public class LobbyInfoPanel : MonoBehaviour
     {
         foreach (var newAddedPlayer in newPlayers)
         {
+            Debug.Log("OnLobbyPlayerAdded called for "+newAddedPlayer.Player.Id);
+            
             LobbyPlayerCard newPlayerCard = Instantiate(lobbyPlayerCardPrefab, lobbyListContent);
             newPlayerCard.SetData(newAddedPlayer.Player,currentLobby.HostId == newAddedPlayer.Player.Id);
     
@@ -261,6 +263,20 @@ public class LobbyInfoPanel : MonoBehaviour
 
     private async void LeaveLobbyAsync()
     {
+        
+        try
+        {
+            UpdatePlayerOptions updatedValue = new UpdatePlayerOptions();
+            updatedValue.Data = new Dictionary<string, PlayerDataObject>();
+
+            await LobbyService.Instance.UpdatePlayerAsync(currentLobby.Id, AuthenticationService.Instance.PlayerId, updatedValue);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Error Update On PLayer Leave Async"+e);
+        }
+        
+        
         try
         {
             await LobbyService.Instance.RemovePlayerAsync(currentLobby.Id,AuthenticationService.Instance.PlayerId);
