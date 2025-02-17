@@ -48,7 +48,7 @@ public class LobbyItem : MonoBehaviour
         }
         catch (LobbyServiceException e)
         {
-            Debug.LogError(e);
+            Debug.LogError("Error Joining Lobby :"+e);
         }
     }
 }

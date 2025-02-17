@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Common;
 using Multiplayer;
@@ -26,7 +27,8 @@ public class LobbyInfoPanel : MonoBehaviour
     [Header("Prefabs")]
     [SerializeField] private LobbyPlayerCard lobbyPlayerCardPrefab;
     
-    private Dictionary<int,LobbyPlayerCard> lobbyPlayerCards = new Dictionary<int, LobbyPlayerCard>();
+    private Dictionary<string,LobbyPlayerCard> lobbyPlayerCards = new Dictionary<string, LobbyPlayerCard>();
+    private List<string> lobbyPlayerIndex =  new List<string> ();
     
     private Lobby currentLobby;
     private LobbyEventCallbacks lobbyEventCallbacks;
@@ -94,6 +96,7 @@ public class LobbyInfoPanel : MonoBehaviour
             Destroy(card.gameObject);
         }
         lobbyPlayerCards.Clear();
+        lobbyPlayerIndex.Clear();
 
         for (int i = 0; i < currentLobby.Players.Count; i++)
         {
@@ -106,8 +109,9 @@ public class LobbyInfoPanel : MonoBehaviour
             
             LobbyPlayerCard newPlayerCard = Instantiate(lobbyPlayerCardPrefab, lobbyListContent);
             newPlayerCard.SetData(player, currentLobby.HostId == player.Id); 
-
-            lobbyPlayerCards.Add(i, newPlayerCard); 
+            
+            lobbyPlayerCards.Add(player.Id, newPlayerCard); 
+            lobbyPlayerIndex.Add(player.Id);
         }
         
         UpdatePlayerCount();
@@ -115,6 +119,7 @@ public class LobbyInfoPanel : MonoBehaviour
 
     private async Task SubscribeToLobbyEvents(Lobby lobby)
     {
+        Debug.Log("Subscribe lobby events.");
         try
         {
             lobbyEventCallbacks = new LobbyEventCallbacks(); 
@@ -135,31 +140,57 @@ public class LobbyInfoPanel : MonoBehaviour
 
     public void UnsubscribeFromLobbyEvents()
     {
-        lobbyEventCallbacks.PlayerJoined -= OnLobbyPlayerAdded;
-        lobbyEventCallbacks.PlayerLeft -= OnLobbyPlayerLeft;
-        lobbyEventCallbacks.PlayerDataChanged -= OnLobbyPlayerDataChanged;
-        lobbyEventCallbacks.LobbyChanged -= OnLobbyDataChanged;
+        Debug.Log("Unsubscribing from lobby events.");
+        
+        try
+        {
+            lobbyEventCallbacks.PlayerJoined -= OnLobbyPlayerAdded;
+            lobbyEventCallbacks.PlayerLeft -= OnLobbyPlayerLeft;
+            lobbyEventCallbacks.PlayerDataChanged -= OnLobbyPlayerDataChanged;
+            lobbyEventCallbacks.LobbyChanged -= OnLobbyDataChanged;
 
-        lobbyEventCallbacks = null;
+            lobbyEventCallbacks = null;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e);
+            throw;
+        }
+       
     }
     
     private void OnLobbyDataChanged(ILobbyChanges lobbyChanges)
     {
-        lobbyChanges.ApplyToLobby(currentLobby);
+        try
+        {
+            Debug.Log("OnLobbyDataChanged called");
+            lobbyChanges.ApplyToLobby(currentLobby);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e);
+            throw;
+        }
     }
     
     private void OnLobbyPlayerLeft(List<int> playerRemovedIndex)
     {
-        foreach (var playerIndex in playerRemovedIndex)
+        for (int i = playerRemovedIndex.Count - 1; i >= 0 ; i--)
         {
-            if (lobbyPlayerCards.ContainsKey(playerIndex))
+            string id = lobbyPlayerIndex[playerRemovedIndex[i]];
+            Debug.Log("OnLobbyPlayerLeft called for "+id);
+
+            if (lobbyPlayerCards.ContainsKey(id))
             {
-                Destroy(lobbyPlayerCards[playerIndex].gameObject);
-                lobbyPlayerCards.Remove(playerIndex);
+                Destroy(lobbyPlayerCards[id].gameObject);
+                lobbyPlayerCards.Remove(id);
+                lobbyPlayerIndex.RemoveAt(playerRemovedIndex[i]);
+                
+                Debug.Log($"OnLobbyPlayerLeft lobbyPlayerCards removed id {id} , lobbyPlayerIndex index {playerRemovedIndex[i]}");
             }
             else
             {
-                Debug.LogError("Player index doesn't exist But you tried remove it from lobby , Index "+playerIndex);
+                Debug.LogError("Player index doesn't exist But you tried remove it from lobby , Index "+id);
             }
         }
         
@@ -174,10 +205,12 @@ public class LobbyInfoPanel : MonoBehaviour
             LobbyPlayerCard newPlayerCard = Instantiate(lobbyPlayerCardPrefab, lobbyListContent);
             newPlayerCard.SetData(newAddedPlayer.Player,currentLobby.HostId == newAddedPlayer.Player.Id);
     
-            if (!lobbyPlayerCards.ContainsKey(newAddedPlayer.PlayerIndex))
+            if (!lobbyPlayerCards.ContainsKey(newAddedPlayer.Player.Id))
             {
-                lobbyPlayerCards.Add(newAddedPlayer.PlayerIndex,newPlayerCard);
+                lobbyPlayerCards.Add(newAddedPlayer.Player.Id,newPlayerCard);
             }
+            
+            lobbyPlayerIndex.Add(newAddedPlayer.Player.Id);
         }
     
         UpdatePlayerCount();
@@ -234,34 +267,46 @@ public class LobbyInfoPanel : MonoBehaviour
 
     private async void SetPlayerReadyStatus(bool status)
     {
+        
+        isReady = status;
+        SetReadyStatusButtonView(isReady);
+        
+        foreach (var player in currentLobby.Players)
+        {
+            Debug.Log($"Player {player.Id}");
+
+            foreach (var lPlayerDataObject in player.Data)
+            {
+                Debug.Log($"Data {lPlayerDataObject.Key} : {lPlayerDataObject.Value.Value}");
+            }
+        }
+        
         try
         {
-            isReady = status;
-            SetReadyStatusButtonView(isReady);
-
             UpdatePlayerOptions updatedValue = new UpdatePlayerOptions();
             updatedValue.Data = new Dictionary<string, PlayerDataObject>()
             {
                 { ConstKeys.ReadyState, new PlayerDataObject(PlayerDataObject.VisibilityOptions.Public, isReady ? ConstKeys.ReadyValue : ConstKeys.NotReadyValue) }
             };
-            
-            await LobbyService.Instance.UpdatePlayerAsync(currentLobby.Id, AuthenticationService.Instance.PlayerId, updatedValue);
 
-            foreach (var card in lobbyPlayerCards)
-            {
-                if (card.Value.GetPlayer().Id == AuthenticationService.Instance.PlayerId)
-                {
-                    card.Value.ReadyStatus(isReady);
-                    break;
-                }
-            }
-            
-            readyStatusButton.interactable = true;
+            await LobbyService.Instance.UpdatePlayerAsync(currentLobby.Id, AuthenticationService.Instance.PlayerId, updatedValue);
         }
         catch (Exception e)
         {
-            Debug.LogError(e);
+            Debug.LogError("Error Update PLayer Async"+e);
         }
+
+        foreach (var card in lobbyPlayerCards)
+        {
+            if (card.Value.GetPlayer().Id == AuthenticationService.Instance.PlayerId)
+            {
+                card.Value.ReadyStatus(isReady);
+                break;
+            }
+        }
+
+        readyStatusButton.interactable = true;
+
     }
 
     private void SetReadyStatusButtonView(bool status)
@@ -287,10 +332,18 @@ public class LobbyInfoPanel : MonoBehaviour
             foreach (var updatedValue in updatedPlayers)
             {
                 //for updating ready status
+                
+                Debug.Log($"OnLobbyPlayerDataChanged key {updatedValue.Key}");
+
+                foreach (var changes in updatedValue.Value)
+                {
+                    Debug.Log($"OnLobbyPlayerDataChanged data : key {changes.Key} : value {changes.Value.Value}");
+                }
+                
                 if (updatedValue.Value.TryGetValue(ConstKeys.ReadyState, out var readyValue))
                 {
                     bool isReady = readyValue.Value.Value == ConstKeys.ReadyValue;
-                    lobbyPlayerCards[updatedValue.Key].ReadyStatus(isReady);
+                    lobbyPlayerCards[ lobbyPlayerIndex[updatedValue.Key]].ReadyStatus(isReady);
                 }
             }
         }
