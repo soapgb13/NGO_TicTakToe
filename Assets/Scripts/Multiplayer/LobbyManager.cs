@@ -26,11 +26,11 @@ public class LobbyManager : MonoBehaviour
 
     private void OnPlayerJoinLobby(Lobby lobby)
     {
-        Debug.Log("On Player Join Lobby Start");
+        // Debug.Log("On Player Join Lobby Start");
         lobbyInfoPanel.AssignLobbyToPanel(lobby);
         ShowJoinedLobbyUI();
         lobbyInfoPanel.StartLobbyHeartBeats();
-        Debug.Log("On Player Join Lobby End");
+        // Debug.Log("On Player Join Lobby End");
     }
     
     private void OnPlayerLeaveLobby()
@@ -40,14 +40,14 @@ public class LobbyManager : MonoBehaviour
 
     public void ShowCreateLobbyUI()
     {
-        Debug.Log("create lobby object on");
+        // Debug.Log("create lobby object on");
         lobbyCreateAndFindUI.SetActive(true);
         joinedLobbyUI.SetActive(false);
     }
 
     public void ShowJoinedLobbyUI()
     {
-        Debug.Log("Joined lobby object on");
+        // Debug.Log("Joined lobby object on");
         joinedLobbyUI.SetActive(true);
         lobbyCreateAndFindUI.SetActive(false);
     }

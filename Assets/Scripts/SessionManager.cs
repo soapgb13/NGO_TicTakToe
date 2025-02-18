@@ -12,8 +12,6 @@ public class SessionManager : MonoBehaviour
         {
             await UnityServices.InitializeAsync();
             await AuthenticationService.Instance.SignInAnonymouslyAsync();
-            //await AuthenticationService.Instance.GetPlayerNameAsync();
-            
             
             Debug.Log($"Sign in anonymously succeeded! PlayerID: {AuthenticationService.Instance.PlayerId} , PlayerName: {AuthenticationService.Instance.PlayerName}");
         }

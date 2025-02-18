@@ -25,7 +25,7 @@ public class LobbyItem : MonoBehaviour
     
     public void OnClickJoinBtn()
     {
-        Debug.Log("OnClickJoinBtn called for lobby "+_lobby.Name);
+        // Debug.Log("OnClickJoinBtn called for lobby "+_lobby.Name);
         JoinLobby();
     }
 
@@ -34,22 +34,21 @@ public class LobbyItem : MonoBehaviour
         try
         {
 
-            // bool isLobbyExits = await DoesLobbyExist(_lobby.Id);
-            // if (!isLobbyExits)
-            // {
-            //     Debug.LogError("Lobby is null , Removing it");
-            //     _lobbyListPanel.RemoveLobby(this);
-            //     return;
-            // }
-            //
-            // Lobby clickedLobby = await LobbyService.Instance.GetLobbyAsync(_lobby.Id);
-            // if (clickedLobby.Players.Count >= clickedLobby.MaxPlayers)
-            // {
-            //     Debug.LogError("Max players Already in Lobby Cant join!");
-            //     return;
-            // }
-            //
-            // _lobby = clickedLobby;
+            Lobby clickedLobby = await LobbyService.Instance.GetLobbyAsync(_lobby.Id);
+            if (clickedLobby == null)
+            {
+                Debug.LogError("Lobby is null , Removing it");
+                _lobbyListPanel.RemoveLobby(this);
+                return;
+            }
+            
+            if (clickedLobby.Players.Count >= clickedLobby.MaxPlayers)
+            {
+                Debug.LogError("Max players Already in Lobby Cant join!");
+                return;
+            }
+            
+            _lobby = clickedLobby;
             
             Player player = new Player(AuthenticationService.Instance.PlayerId,joined:DateTime.Now)
             {
@@ -63,12 +62,12 @@ public class LobbyItem : MonoBehaviour
             JoinLobbyByIdOptions options = new JoinLobbyByIdOptions();
             options.Player = player;
             
-            Debug.Log("OnClickJoinBtn JoinLobby "+_lobby.Name+" with Player Data");
+            // Debug.Log("OnClickJoinBtn JoinLobby "+_lobby.Name+" with Player Data");
             
             Lobby joinedLobby = await LobbyService.Instance.JoinLobbyByIdAsync(_lobby.Id,options);
             MultiplayerEvents.OnJoinLobby(joinedLobby);
             
-            Debug.Log("OnClickJoinBtn JoinLobby Success");
+            // Debug.Log("OnClickJoinBtn JoinLobby Success");
         }
         catch (Exception e)
         {
@@ -78,17 +77,5 @@ public class LobbyItem : MonoBehaviour
         }
     }
     
-    async Task<bool> DoesLobbyExist(string lobbyId)
-    {
-        try
-        {
-            Lobby lobby = await LobbyService.Instance.GetLobbyAsync(lobbyId);
-            return lobby != null; // Lobby exists
-        }
-        catch (LobbyServiceException e)
-        {
-            Debug.Log($"Lobby check failed: {e.Reason}");
-            return false; // Lobby does not exist or an error occurred
-        }
-    }
+    
 }

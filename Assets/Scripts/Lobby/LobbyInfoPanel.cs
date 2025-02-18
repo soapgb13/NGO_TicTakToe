@@ -99,17 +99,17 @@ public class LobbyInfoPanel : MonoBehaviour
         {
             Player player = currentLobby.Players[i];
 
-            Debug.Log($"Player Data Reading : {player.Id}");
+            // Debug.Log($"Player Data Reading : {player.Id}");
             
-            foreach (var playerData in player.Data)
-            {
-                Debug.Log($"player Data : {playerData.Key} : {playerData.Value.Value}");
-            }
-            
-            if (player.Id == AuthenticationService.Instance.PlayerId)
-            {
-                Debug.Log($"Player index {i}.");
-            }
+            // foreach (var playerData in player.Data)
+            // {
+            //     Debug.Log($"player Data : {playerData.Key} : {playerData.Value.Value}");
+            // }
+            //
+            // if (player.Id == AuthenticationService.Instance.PlayerId)
+            // {
+            //     Debug.Log($"Player index {i}.");
+            // }
             
             LobbyPlayerCard newPlayerCard = Instantiate(lobbyPlayerCardPrefab, lobbyListContent);
             newPlayerCard.SetData(player, currentLobby.HostId == player.Id); 
@@ -123,7 +123,7 @@ public class LobbyInfoPanel : MonoBehaviour
 
     private async Task SubscribeToLobbyEvents(Lobby lobby)
     {
-        Debug.Log("Subscribe lobby events.");
+        // Debug.Log("Subscribe lobby events.");
         try
         {
             lobbyEventCallbacks = new LobbyEventCallbacks(); 
@@ -144,7 +144,7 @@ public class LobbyInfoPanel : MonoBehaviour
 
     public async void UnsubscribeFromLobbyEvents(Action onUnsubscribeSuccessAction)
     {
-        Debug.Log("Unsubscribing from lobby events.");
+        // Debug.Log("Unsubscribing from lobby events.");
         
         try
         {
@@ -171,7 +171,7 @@ public class LobbyInfoPanel : MonoBehaviour
     {
         try
         {
-            Debug.Log("OnLobbyDataChanged called");
+            //Debug.Log("OnLobbyDataChanged called");
             lobbyChanges.ApplyToLobby(currentLobby);
         }
         catch (Exception e)
@@ -186,7 +186,7 @@ public class LobbyInfoPanel : MonoBehaviour
         for (int i = playerRemovedIndex.Count - 1; i >= 0 ; i--)
         {
             string id = lobbyPlayerIndex[playerRemovedIndex[i]];
-            Debug.Log("OnLobbyPlayerLeft called for "+id);
+            //Debug.Log("OnLobbyPlayerLeft called for "+id);
 
             if (lobbyPlayerCards.ContainsKey(id))
             {
@@ -194,7 +194,7 @@ public class LobbyInfoPanel : MonoBehaviour
                 lobbyPlayerCards.Remove(id);
                 lobbyPlayerIndex.RemoveAt(playerRemovedIndex[i]);
                 
-                Debug.Log($"OnLobbyPlayerLeft lobbyPlayerCards removed id {id} , lobbyPlayerIndex index {playerRemovedIndex[i]}");
+                //Debug.Log($"OnLobbyPlayerLeft lobbyPlayerCards removed id {id} , lobbyPlayerIndex index {playerRemovedIndex[i]}");
             }
             else
             {
@@ -210,7 +210,7 @@ public class LobbyInfoPanel : MonoBehaviour
     {
         foreach (var newAddedPlayer in newPlayers)
         {
-            Debug.Log("OnLobbyPlayerAdded called for "+newAddedPlayer.Player.Id);
+            //Debug.Log("OnLobbyPlayerAdded called for "+newAddedPlayer.Player.Id);
             
             LobbyPlayerCard newPlayerCard = Instantiate(lobbyPlayerCardPrefab, lobbyListContent);
             newPlayerCard.SetData(newAddedPlayer.Player,currentLobby.HostId == newAddedPlayer.Player.Id);
@@ -283,7 +283,7 @@ public class LobbyInfoPanel : MonoBehaviour
         }
         catch (Exception e)
         {
-            Console.WriteLine("Error Leaving lobby :"+e);
+            Debug.LogError("Error Leaving lobby :"+e);
             throw;
         }
         
@@ -308,15 +308,15 @@ public class LobbyInfoPanel : MonoBehaviour
         isReady = status;
         SetReadyStatusButtonView(isReady);
         
-        foreach (var player in currentLobby.Players)
-        {
-            Debug.Log($"Player {player.Id}");
-
-            foreach (var lPlayerDataObject in player.Data)
-            {
-                Debug.Log($"Data {lPlayerDataObject.Key} : {lPlayerDataObject.Value.Value}");
-            }
-        }
+        // foreach (var player in currentLobby.Players)
+        // {
+        //     Debug.Log($"Player {player.Id}");
+        //
+        //     foreach (var lPlayerDataObject in player.Data)
+        //     {
+        //         Debug.Log($"Data {lPlayerDataObject.Key} : {lPlayerDataObject.Value.Value}");
+        //     }
+        // }
         
         try
         {
@@ -370,12 +370,12 @@ public class LobbyInfoPanel : MonoBehaviour
             {
                 //for updating ready status
                 
-                Debug.Log($"OnLobbyPlayerDataChanged key {updatedValue.Key}");
+                //Debug.Log($"OnLobbyPlayerDataChanged key {updatedValue.Key}");
 
-                foreach (var changes in updatedValue.Value)
-                {
-                    Debug.Log($"OnLobbyPlayerDataChanged data : key {changes.Key} : value {changes.Value.Value.Value}");
-                }
+                // foreach (var changes in updatedValue.Value)
+                // {
+                //     Debug.Log($"OnLobbyPlayerDataChanged data : key {changes.Key} : value {changes.Value.Value.Value}");
+                // }
                 
                 if (updatedValue.Value.TryGetValue(ConstKeys.ReadyState, out var readyValue))
                 {

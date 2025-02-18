@@ -12,10 +12,10 @@ public class LobbyListPanel : MonoBehaviour
 
     private List<LobbyItem> spawnedLobbies = new List<LobbyItem>();
 
-    // private void OnEnable()
-    // {
-    //     _ = RefreshLobbies();
-    // }
+    private void OnEnable()
+    {
+        _ = RefreshLobbies();
+    }
 
 
     [ContextMenu("Refresh lobbies")]
@@ -48,7 +48,7 @@ public class LobbyListPanel : MonoBehaviour
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            Debug.LogError(e);
             throw;
         }
     }

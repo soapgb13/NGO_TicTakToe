@@ -54,7 +54,6 @@ public class CreateLobbyPanel : MonoBehaviour
          options.Player = player;
          
          Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayer, options);
-         Debug.Log($"Created lobby {lobby.Name} ! Lobby code {lobby.LobbyCode}");
          MultiplayerEvents.OnJoinLobby(lobby);
       }
       catch (Exception e)
