@@ -8,12 +8,13 @@ public class PlayersIcons : MonoBehaviour
     [SerializeField] private SpriteRenderer emotionRenderer;
     [SerializeField] private Sprite normalSprite , winSprite , loseSprite;
     
-    public TileOwnerType owner;
+    private string _owner;
     private Vector2Int _sitPosition;
 
 
-    public void Setup(Vector2Int sitPosition)
+    public void Setup(Vector2Int sitPosition,string owner)
     {
+        _owner = owner;
         _sitPosition = sitPosition;
     }
     
@@ -27,9 +28,9 @@ public class PlayersIcons : MonoBehaviour
         GameEvents.OnDeclareWinnerTiles -= IsInWinLine;
     }
 
-    public void IsInWinLine(TileOwnerType winner, List<Vector2Int> winPositions)
+    public void IsInWinLine(string winner, List<Vector2Int> winPositions)
     {
-        if (owner != winner)
+        if (_owner != winner)
         {
             emotionRenderer.sprite = loseSprite;
         }

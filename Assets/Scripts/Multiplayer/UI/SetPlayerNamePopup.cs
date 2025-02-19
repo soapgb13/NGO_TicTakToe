@@ -14,6 +14,8 @@ public class SetPlayerNamePopup : MonoBehaviour
     [SerializeField] private Button okButton;
     
     string newPlayerName = "";
+    private string orignalName = "";
+    private string nameWithoutHash = "";
     
     private void Start()
     {
@@ -42,7 +44,9 @@ public class SetPlayerNamePopup : MonoBehaviour
 
     public void OpenNameChangePopup()
     {
-        playerNameText.text = AuthenticationService.Instance.PlayerName;
+        orignalName = AuthenticationService.Instance.PlayerName;
+        nameWithoutHash = orignalName.Split("#")[0];
+        playerNameText.text = nameWithoutHash;
         playerNamePopup.SetActive(true);
     }
     
@@ -61,7 +65,8 @@ public class SetPlayerNamePopup : MonoBehaviour
     public void OnTextFieldInputUpdated(string value)
     {
         newPlayerName = playerNameText.text;
-        if (string.IsNullOrEmpty(newPlayerName))
+        
+        if (string.IsNullOrEmpty(newPlayerName) || nameWithoutHash == newPlayerName)
         {
             okButton.interactable = false;
             return;

@@ -13,9 +13,13 @@ public class GameManager : NetworkBehaviour
     public static GameManager instance;
 
     private Dictionary<string,string> playersIDToNameDict = new Dictionary<string, string>();
+    
     private int totalPlayers , connectedClients;
     private string _playerName;
+    public string PlayerName { get => _playerName; }
+    
     private string _playerID;
+    public string PlayerID { get => _playerID; }
     
     private void Awake()
     {
@@ -41,7 +45,7 @@ public class GameManager : NetworkBehaviour
     {
         try
         {
-            Debug.Log("PlayerID: " + _playerID+" Name: " + _playerName+" SetPlayerIdAndNameInHostDictRPC calling");
+            // Debug.Log("PlayerID: " + _playerID+" Name: " + _playerName+" SetPlayerIdAndNameInHostDictRPC calling");
             SetPlayerIdAndNameInHostDictRPC(_playerID, _playerName,_playerName);
         }
         catch (Exception e)
@@ -70,8 +74,10 @@ public class GameManager : NetworkBehaviour
 
     private void OnDestroy()
     {
-        if(NetworkManager.Singleton != null)
+        if (NetworkManager.Singleton != null)
+        {
             NetworkManager.Singleton.OnClientConnectedCallback -= ActionOnClientConnected;
+        }
     }
 
 
@@ -81,8 +87,12 @@ public class GameManager : NetworkBehaviour
         if (!playersIDToNameDict.ContainsKey(playerID))
         {
             playersIDToNameDict.Add(playerID, playerName);
-            Debug.Log($"Added Player {playerID} Name {playerName}, Dict size {playersIDToNameDict.Count} , senderID : {senderID}");
+            // Debug.Log($"Added Player {playerID} Name {playerName}, Dict size {playersIDToNameDict.Count} , senderID : {senderID}");
             SendDictionary(playersIDToNameDict,senderID);
+            if (playersIDToNameDict.Count == totalPlayers)
+            {
+                BoardManager.Instance.ActionOnAllPlayerRegisteredRpc();
+            }
         }
         else
         {
@@ -93,12 +103,8 @@ public class GameManager : NetworkBehaviour
     [Rpc(SendTo.NotServer)]
     public void SendDictionaryServerRpc(NetworkSerializableDictionary dictWrapper,string senderID)
     {
-        Debug.Log($"server sent updated Dict count {dictWrapper.Dictionary.Count}, local dict count {playersIDToNameDict.Count}");
+        // Debug.Log($"server sent updated Dict count {dictWrapper.Dictionary.Count}, local dict count {playersIDToNameDict.Count}");
         playersIDToNameDict = dictWrapper.Dictionary;
-        // foreach (var player in playersIDToNameDict)
-        // {
-        //     Debug.Log($"playersIDToNameDict key : {player.Key}, name : {player.Value}  senderID : {senderID}");
-        // }
     }
 
     public void SendDictionary(Dictionary<string, string> dict,string senderID)
@@ -129,15 +135,18 @@ public class GameManager : NetworkBehaviour
 
         if (connectedClients == totalPlayers)
         {
-            SceneEventProgressStatus progressStatus = NetworkManager.Singleton.SceneManager.LoadScene("TikTacToeGameplay",LoadSceneMode.Single);
+            NetworkManager.Singleton.SceneManager.LoadScene("TikTacToeGameplay",LoadSceneMode.Single);
         }
-        
+    }
+    
+    public List<string> GetJoinedPlayersList()
+    {
+        return playersIDToNameDict.Keys.ToList();
     }
 
-    [Rpc(SendTo.Everyone)]
-    private void OnStartGameRpc()
+    public string GetNameFromID(string playerID)
     {
-        
+      return  playersIDToNameDict[playerID];
     }
     
 }

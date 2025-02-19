@@ -42,6 +42,14 @@ public class LobbyInfoPanel : MonoBehaviour
     private ILobbyEvents subscriberHolder;
 
 
+    private void OnDestroy()
+    {
+        if (subscriberHolder != null)
+        {
+            UnsubscribeFromLobbyEvents(null);
+        }
+    }
+
     public void AssignLobbyToPanel(Lobby lobby)
     {
         isReady = false;
@@ -458,20 +466,20 @@ public class LobbyInfoPanel : MonoBehaviour
 
         try
         {
+            GlobalUI.Singleton.ShowLoadingScreen();
             GameManager.instance.WaitForOtherClients();
             GameManager.instance.SetPlayerData(currentLobby);
-
             await LobbyService.Instance.UpdateLobbyAsync(currentLobby.Id,newLobbyOptions);
-        
             startGameButton.interactable = true;
         }
         catch (Exception e)
         {
+            startGameButton.interactable = true;
             Debug.LogError(e);
+            GlobalUI.Singleton.HideLoadingScreen();
             throw;
         }
         
-        GlobalUI.Singleton.ShowLoadingScreen();
     }
 
     private async void JoinRelayFromLobbyCode()
@@ -500,14 +508,15 @@ public class LobbyInfoPanel : MonoBehaviour
         if (isInRelay)
         {
             try
-            {
-               NetworkManager.Singleton.StartClient();
-               GameManager.instance.SetPlayerData(currentLobby: currentLobby);
-               GlobalUI.Singleton.ShowLoadingScreen();
+            { 
+                GlobalUI.Singleton.ShowLoadingScreen();
+                NetworkManager.Singleton.StartClient();
+                GameManager.instance.SetPlayerData(currentLobby: currentLobby);
             }
             catch (Exception e)
             {
                 Debug.LogError(e);
+                GlobalUI.Singleton.HideLoadingScreen();
                 throw;
             }
         }

@@ -6,21 +6,20 @@ using UnityEngine;
 public class BoardTile : MonoBehaviour
 {
     [SerializeField] Vector2Int position;
-    [SerializeField] TileOwnerType currentOwner = TileOwnerType.Empty;
+    string _currentOwner = "";
 
 
     public void OnMouseDown()
     {
-        //Debug.Log("Clicked tile "+position.ToString());
         GameEvents.OnClickTile?.Invoke(this);
     }
 
-    public void SetCurrentOwner(TileOwnerType state)
+    public void SetCurrentOwner(string state)
     {
-        currentOwner = state;
+        _currentOwner = state;
     }
 
-    public TileOwnerType GetCurrentOwner() => currentOwner;
+    public string GetCurrentOwner() => _currentOwner;
 
     public Vector2Int GetPosition() => position;
 

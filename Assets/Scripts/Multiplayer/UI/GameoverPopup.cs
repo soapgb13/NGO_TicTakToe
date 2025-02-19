@@ -27,9 +27,9 @@ public class GameoverPopup : MonoBehaviour
    }
 
 
-   private void OnGameOverAction(TileOwnerType ownerType)
+   private void OnGameOverAction(string ownerType)
    {
-      if (ownerType == TileOwnerType.Empty)
+      if (string.IsNullOrEmpty(ownerType))
       {
          titleText.text = DrawString;
          winnerNameText.text = "Draw!";
@@ -37,7 +37,7 @@ public class GameoverPopup : MonoBehaviour
       else
       {
          titleText.text = AnyOneWinString;
-         winnerNameText.text = ownerType.ToString();
+         winnerNameText.text =  GameManager.instance.GetNameFromID(ownerType);
       }
       
       gameOverPopupHolder.SetActive(true);

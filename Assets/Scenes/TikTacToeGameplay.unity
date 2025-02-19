@@ -1369,10 +1369,13 @@ MonoBehaviour:
   - {fileID: 623602767}
   - {fileID: 1703480229}
   - {fileID: 533920042}
-  hostIconPrefab: {fileID: 327445704122132594, guid: a297d117125ca4fc389cace6c0b97208, type: 3}
-  clientIconPrefab: {fileID: 5802796215301202136, guid: 77b5fb03d84c3470dac798f7127d3bc3, type: 3}
-  currentTurn:
-    m_InternalValue: 0
+  playersIcons:
+  - {fileID: 327445704122132594, guid: a297d117125ca4fc389cace6c0b97208, type: 3}
+  - {fileID: 5802796215301202136, guid: 77b5fb03d84c3470dac798f7127d3bc3, type: 3}
+  - {fileID: 5802796215301202136, guid: 7d0fde73dca9149f3832b6a97ca6180d, type: 3}
+  - {fileID: 5802796215301202136, guid: 04f9069d2659c47f3b47c7194ae4ef5f, type: 3}
+  isGameOver: 0
+  isQuitGame: 0
 --- !u!114 &663366587
 MonoBehaviour:
   m_ObjectHideFlags: 0

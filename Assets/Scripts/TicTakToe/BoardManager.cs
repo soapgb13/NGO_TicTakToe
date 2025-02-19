@@ -4,12 +4,7 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-public enum TileOwnerType
-{
-    Empty = 0,
-    Host = 1,
-    Client = 2,
-}
+
 
 public class BoardManager : NetworkBehaviour
 {
@@ -19,18 +14,21 @@ public class BoardManager : NetworkBehaviour
 
     [Header("Board Settings")]
     [SerializeField] private List<BoardTile> boardTiles = new List<BoardTile>();
-    private Dictionary<Vector2Int, TileOwnerType> _tilesDict = new Dictionary<Vector2Int, TileOwnerType>();
+    private Dictionary<Vector2Int, string> _tilesDict = new Dictionary<Vector2Int, string>();
 
     [Header("Player Settings")]
-    [SerializeField] private PlayersIcons hostIconPrefab;
-    [SerializeField] private PlayersIcons clientIconPrefab;
-
-    public NetworkVariable<TileOwnerType> currentTurn = new NetworkVariable<TileOwnerType>(
-        TileOwnerType.Host, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    [SerializeField] private List<PlayersIcons> playersIcons = new List<PlayersIcons>();
+   
+    public string currentTurn => joinedPlayers[currentTurnIndex];
+    
+    private List<string> joinedPlayers = new List<string>();
+    private int currentTurnIndex = 0;
     
     public bool isGameOver = false;
     public bool isQuitGame = false;
 
+    
+    
     public void Awake()
     {
         Instance = this;
@@ -45,7 +43,6 @@ public class BoardManager : NetworkBehaviour
     public override void OnDestroy()
     {
         GameEvents.OnClickTile -= OnCurrentTurnPlayerAction;
-        currentTurn.OnValueChanged -= OnTurnEndValueUpdated;
         
         if(NetworkManager.Singleton != null)
             NetworkManager.Singleton.OnClientDisconnectCallback -= TerminateGameOnClientOrHostDisconnect;
@@ -62,33 +59,14 @@ public class BoardManager : NetworkBehaviour
     {
         GameManager.instance.AddPlayerDataToHost();
         InitializeBoard();
-        GlobalUI.Singleton.HideLoadingScreen();
     }
 
     public override void OnNetworkSpawn()
     {
         GameEvents.OnClickTile += OnCurrentTurnPlayerAction;
-        currentTurn.OnValueChanged += OnTurnEndValueUpdated;
-
-        if (IsHost || IsServer)
-        {
-            SetInitialTurn();
-        }
-        else
-        {
-            GameEvents.OnCurrentTurnUpdated?.Invoke(currentTurn.Value);
-        }
-
         base.OnNetworkSpawn();
     }
-
-    private void OnTurnEndValueUpdated(TileOwnerType oldValue, TileOwnerType newValue)
-    {
-        GameEvents.OnCurrentTurnUpdated?.Invoke(newValue);
-    }
-
     
-
     private void InitializeBoard()
     {
         foreach (var boardTile in boardTiles)
@@ -96,7 +74,7 @@ public class BoardManager : NetworkBehaviour
             var position = boardTile.GetPosition();
             if (!_tilesDict.ContainsKey(position))
             {
-                _tilesDict.Add(position, TileOwnerType.Empty);
+                _tilesDict.Add(position, "");
             }
             else
             {
@@ -114,9 +92,10 @@ public class BoardManager : NetworkBehaviour
 
     private bool IsValidMove(BoardTile clickedTile)
     {
-        if (clickedTile.GetCurrentOwner() != TileOwnerType.Empty) return false;
-        if (currentTurn.Value == TileOwnerType.Host && !IsHost) return false;
-        if (currentTurn.Value == TileOwnerType.Client && IsHost) return false;
+        if (!string.IsNullOrEmpty(clickedTile.GetCurrentOwner())) return false;
+        
+        if (currentTurn != GameManager.instance.PlayerID) return false;
+        
         return true;
     }
 
@@ -127,29 +106,30 @@ public class BoardManager : NetworkBehaviour
         if (boardTile == null) return;
 
         SpawnIconForPlayer(boardTile);
-        CheckForCombination(clickedTile, currentTurn.Value);
+        CheckForCombination(clickedTile, currentTurn);
         CheckForDraw();
         ChangeTurn();
     }
 
     private void SpawnIconForPlayer(BoardTile boardTile)
     {
-        boardTile.SetCurrentOwner(currentTurn.Value);
-        _tilesDict[boardTile.GetPosition()] = currentTurn.Value;
-
-        var iconPrefab = currentTurn.Value == TileOwnerType.Host ? hostIconPrefab : clientIconPrefab;
+        boardTile.SetCurrentOwner(currentTurn);
+        _tilesDict[boardTile.GetPosition()] = currentTurn;
+        
+        var iconPrefab = playersIcons[currentTurnIndex] ;
+        
         PlayersIcons spawnedIcon = Instantiate(iconPrefab, boardTile.transform.position, Quaternion.identity);
-        spawnedIcon.Setup(boardTile.GetPosition());
+        spawnedIcon.Setup(boardTile.GetPosition(),currentTurn);
     }
 
     private void ChangeTurn()
     {
         if (!IsHost || isGameOver) return;
 
-        currentTurn.Value = currentTurn.Value == TileOwnerType.Host ? TileOwnerType.Client : TileOwnerType.Host;
+        MoveTurnToNextPlayerRpc();
     }
 
-    private void DeclareWinner(List<Vector2Int> winningTiles, TileOwnerType winnerName)
+    private void DeclareWinner(List<Vector2Int> winningTiles, string winnerName)
     {
         isGameOver = true;
 
@@ -162,10 +142,10 @@ public class BoardManager : NetworkBehaviour
     private IEnumerator WaitAndShowGoToMainMenuPopup()
     {
         yield return new WaitForSeconds(3);
-        GameEvents.OnGameOver?.Invoke(currentTurn.Value);
+        GameEvents.OnGameOver?.Invoke(currentTurn);
     }
 
-    private void CheckForCombination(Vector2Int boardTile, TileOwnerType forPlayerToCheck)
+    private void CheckForCombination(Vector2Int boardTile, string forPlayerToCheck)
     {
         if (CheckDirection(boardTile, Vector2Int.right, forPlayerToCheck) ||
             CheckDirection(boardTile, Vector2Int.up, forPlayerToCheck) ||
@@ -176,7 +156,7 @@ public class BoardManager : NetworkBehaviour
         }
     }
 
-    private bool CheckDirection(Vector2Int origin, Vector2Int direction, TileOwnerType forPlayerToCheck)
+    private bool CheckDirection(Vector2Int origin, Vector2Int direction, string forPlayerToCheck)
     {
         var foundCombination = GetSequenceInDirection(origin, direction, forPlayerToCheck);
         if (foundCombination.Count >= RequiredSequenceForWin)
@@ -187,7 +167,7 @@ public class BoardManager : NetworkBehaviour
         return false;
     }
 
-    private List<Vector2Int> GetSequenceInDirection(Vector2Int origin, Vector2Int direction, TileOwnerType forPlayerToCheck)
+    private List<Vector2Int> GetSequenceInDirection(Vector2Int origin, Vector2Int direction, string forPlayerToCheck)
     {
         var foundSequences = new List<Vector2Int> { origin };
 
@@ -200,7 +180,7 @@ public class BoardManager : NetworkBehaviour
         return foundSequences;
     }
 
-    private void AddTileToSequence(Vector2Int position, TileOwnerType forPlayerToCheck, List<Vector2Int> sequence)
+    private void AddTileToSequence(Vector2Int position, string forPlayerToCheck, List<Vector2Int> sequence)
     {
         if (_tilesDict.TryGetValue(position, out var owner) && owner == forPlayerToCheck)
         {
@@ -214,15 +194,40 @@ public class BoardManager : NetworkBehaviour
 
         foreach (var tile in _tilesDict.Values)
         {
-            if (tile == TileOwnerType.Empty) return;
+            if (string.IsNullOrEmpty(tile)) return;
         }
 
         isGameOver = true;
-        GameEvents.OnGameOver?.Invoke(TileOwnerType.Empty);
+        GameEvents.OnGameOver?.Invoke("");
     }
 
     private void SetInitialTurn()
     {
-        currentTurn.Value = TileOwnerType.Host;
+        currentTurnIndex = 0;
+    }
+    
+    
+    [Rpc(SendTo.Everyone)]
+    public void MoveTurnToNextPlayerRpc()
+    {
+        if (currentTurnIndex >= joinedPlayers.Count - 1)
+        {
+            currentTurnIndex = 0;
+        }
+        else
+        {
+            currentTurnIndex++;
+        }
+        
+        GameEvents.OnCurrentTurnUpdated?.Invoke(currentTurn);
+    }
+
+    [Rpc(SendTo.Everyone)]
+    public void ActionOnAllPlayerRegisteredRpc()
+    {
+        joinedPlayers.Clear();
+        joinedPlayers = GameManager.instance.GetJoinedPlayersList();
+        GameEvents.OnCurrentTurnUpdated?.Invoke(currentTurn);
+        GlobalUI.Singleton.HideLoadingScreen();
     }
 }

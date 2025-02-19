@@ -17,8 +17,8 @@ public class TurnNameUpdater : MonoBehaviour
         GameEvents.OnCurrentTurnUpdated -= UpdateName;
     }
 
-    private void UpdateName(TileOwnerType owner)
+    private void UpdateName(string owner)
     {
-        nameText.text = owner.ToString();
+        nameText.text = GameManager.instance.GetNameFromID(owner);
     }
 }
