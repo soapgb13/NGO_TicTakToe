@@ -776,6 +776,7 @@ GameObject:
   - component: {fileID: 1017371019}
   - component: {fileID: 1017371018}
   - component: {fileID: 1017371017}
+  - component: {fileID: 1017371020}
   m_Layer: 5
   m_Name: ChangeNameBtn
   m_TagString: Untagged
@@ -897,6 +898,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1017371015}
   m_CullTransparentMesh: 1
+--- !u!114 &1017371020
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1017371015}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8295f5600d821424a9ae60a71ff7d90a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1077168333
 GameObject:
   m_ObjectHideFlags: 0
@@ -6481,11 +6494,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6993381577363497092, guid: 4a12f62c338564366b2d70ad8804c50b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -305
       objectReference: {fileID: 0}
     - target: {fileID: 6993381577363497092, guid: 4a12f62c338564366b2d70ad8804c50b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 343.35498
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

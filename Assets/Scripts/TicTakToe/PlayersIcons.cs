@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 
 public class PlayersIcons : MonoBehaviour
@@ -21,6 +22,8 @@ public class PlayersIcons : MonoBehaviour
     private void OnEnable()
     {
         GameEvents.OnDeclareWinnerTiles += IsInWinLine;
+        transform.localScale = Vector3.zero;
+        transform.DOScale(1f, 0.4f).SetEase(Ease.OutBounce);
     }
 
     private void OnDestroy()

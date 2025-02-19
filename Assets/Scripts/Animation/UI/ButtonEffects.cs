@@ -3,9 +3,9 @@ using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class ButtonEffects : MonoBehaviour , IPointerEnterHandler , IPointerExitHandler , IPointerClickHandler
+public class ButtonEffects : MonoBehaviour , IPointerEnterHandler , IPointerExitHandler //, IPointerClickHandler
 {
-    private float animationTime = 0.2f;
+    private float animationTime = 0.1f;
     
     private void OnEnable()
     {
@@ -15,7 +15,7 @@ public class ButtonEffects : MonoBehaviour , IPointerEnterHandler , IPointerExit
     public void OnPointerEnter(PointerEventData eventData)
     {
         transform.DOKill();
-        transform.DOScale(1.1f, animationTime);
+        transform.DOScale(1.08f, animationTime);
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -24,9 +24,9 @@ public class ButtonEffects : MonoBehaviour , IPointerEnterHandler , IPointerExit
         transform.DOScale(1f, animationTime);
     }
 
-    public void OnPointerClick(PointerEventData eventData)
-    {
-        transform.DOKill();
-        transform.DOScale(1f, animationTime).SetEase(Ease.OutBack);
-    }
+    // public void OnPointerClick(PointerEventData eventData)
+    // {
+    //     transform.DOKill();
+    //     transform.DOScale(1f, animationTime).SetEase(Ease.OutBack);
+    // }
 }
