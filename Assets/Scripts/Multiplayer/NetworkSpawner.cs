@@ -7,7 +7,7 @@ public class NetworkSpawner : MonoBehaviour
 {
     [SerializeField] private GameObject NetworkPrefab;
     [SerializeField] private GameManager gameManager;
-    
+    [SerializeField] private GlobalUI globalUI;
     private void Awake()
     {
         if (NetworkManager.Singleton == null)
@@ -17,9 +17,12 @@ public class NetworkSpawner : MonoBehaviour
 
         if (GameManager.instance == null)
         {
-           var instance = Instantiate(gameManager);
-           // var instanceNetworkObject = instance.GetComponent<NetworkObject>();
-           // instanceNetworkObject.Spawn();
+           Instantiate(gameManager);
+        }
+
+        if (GlobalUI.Singleton == null)
+        {
+            Instantiate(globalUI);
         }
     }
 }

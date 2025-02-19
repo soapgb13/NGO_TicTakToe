@@ -470,6 +470,8 @@ public class LobbyInfoPanel : MonoBehaviour
             Debug.LogError(e);
             throw;
         }
+        
+        GlobalUI.Singleton.ShowLoadingScreen();
     }
 
     private async void JoinRelayFromLobbyCode()
@@ -501,6 +503,7 @@ public class LobbyInfoPanel : MonoBehaviour
             {
                NetworkManager.Singleton.StartClient();
                GameManager.instance.SetPlayerData(currentLobby: currentLobby);
+               GlobalUI.Singleton.ShowLoadingScreen();
             }
             catch (Exception e)
             {
@@ -508,6 +511,8 @@ public class LobbyInfoPanel : MonoBehaviour
                 throw;
             }
         }
+        
+
     }
 
 }

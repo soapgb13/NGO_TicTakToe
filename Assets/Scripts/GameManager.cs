@@ -129,8 +129,14 @@ public class GameManager : NetworkBehaviour
 
         if (connectedClients == totalPlayers)
         {
-            NetworkManager.Singleton.SceneManager.LoadScene("TikTacToeGameplay",LoadSceneMode.Single);
+            SceneEventProgressStatus progressStatus = NetworkManager.Singleton.SceneManager.LoadScene("TikTacToeGameplay",LoadSceneMode.Single);
         }
+        
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void OnStartGameRpc()
+    {
         
     }
     

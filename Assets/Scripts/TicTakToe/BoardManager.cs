@@ -62,6 +62,7 @@ public class BoardManager : NetworkBehaviour
     {
         GameManager.instance.AddPlayerDataToHost();
         InitializeBoard();
+        GlobalUI.Singleton.HideLoadingScreen();
     }
 
     public override void OnNetworkSpawn()
