@@ -42,6 +42,11 @@ public class CreateLobbyPanel : MonoBehaviour
          CreateLobbyOptions options = new CreateLobbyOptions();
          options.IsPrivate = false;
 
+         options.Data = new Dictionary<string, DataObject>()
+         {
+            { ConstKeys.LobbyRelayCodeKey, new DataObject(DataObject.VisibilityOptions.Member, "0") }
+         };
+         
          Player player = new Player(AuthenticationService.Instance.PlayerId,joined:DateTime.Now)
          {
             Data = new Dictionary<string, PlayerDataObject>

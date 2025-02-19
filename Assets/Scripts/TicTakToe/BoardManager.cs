@@ -60,6 +60,7 @@ public class BoardManager : NetworkBehaviour
 
     private void Start()
     {
+        GameManager.instance.AddPlayerDataToHost();
         InitializeBoard();
     }
 

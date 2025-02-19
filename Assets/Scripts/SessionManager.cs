@@ -7,13 +7,15 @@ public class SessionManager : MonoBehaviour
 {
     async void Start()
     {
-	
+
         try
         {
-            await UnityServices.InitializeAsync();
-            await AuthenticationService.Instance.SignInAnonymouslyAsync();
-            
-            Debug.Log($"Sign in anonymously succeeded! PlayerID: {AuthenticationService.Instance.PlayerId} , PlayerName: {AuthenticationService.Instance.PlayerName}");
+            if (UnityServices.State == ServicesInitializationState.Uninitialized)
+            {
+                await UnityServices.InitializeAsync();
+                await AuthenticationService.Instance.SignInAnonymouslyAsync();
+                Debug.Log($"Sign in anonymously succeeded! PlayerID: {AuthenticationService.Instance.PlayerId} , PlayerName: {AuthenticationService.Instance.PlayerName}");
+            }
         }
         catch (Exception e)
         {

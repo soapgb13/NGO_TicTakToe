@@ -26,7 +26,7 @@ public class LobbyItem : MonoBehaviour
     public void OnClickJoinBtn()
     {
         // Debug.Log("OnClickJoinBtn called for lobby "+_lobby.Name);
-        JoinLobby();
+        _ = JoinLobby();
     }
 
     private async Task JoinLobby()

@@ -2,6 +2,8 @@ namespace Common
 {
     public static class ConstKeys
     {
+        public static readonly string LobbyRelayCodeKey = "LobbyRelayCode";
+        
         public static readonly string PlayerName = "PlayerName";
         
         public static readonly string ReadyState = "ReadyState";

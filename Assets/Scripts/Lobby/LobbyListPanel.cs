@@ -12,12 +12,6 @@ public class LobbyListPanel : MonoBehaviour
 
     private List<LobbyItem> spawnedLobbies = new List<LobbyItem>();
 
-    private void OnEnable()
-    {
-        _ = RefreshLobbies();
-    }
-
-
     [ContextMenu("Refresh lobbies")]
     public void RefreshLobbiesListBtnClicked()
     {

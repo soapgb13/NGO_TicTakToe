@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Common;
 using Multiplayer;
 using TMPro;
+using Unity.Netcode;
 using Unity.Services.Authentication;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
@@ -22,7 +23,8 @@ public class LobbyInfoPanel : MonoBehaviour
     [SerializeField] private Button readyStatusButton;
     [SerializeField] private Sprite readySprite , notReadySprite;
     [SerializeField] private TMP_Text readyStatusText;
-    
+    [SerializeField] private Button startGameButton;
+
     [SerializeField] private Transform lobbyListContent;
     [Header("Prefabs")]
     [SerializeField] private LobbyPlayerCard lobbyPlayerCardPrefab;
@@ -48,12 +50,44 @@ public class LobbyInfoPanel : MonoBehaviour
         currentLobby = lobby;
 
         isHostOfLobby = lobby.HostId == AuthenticationService.Instance.PlayerId;
+
+        UpdateStartGameButton();
         
         UpdateLobbyInfo();
 
         CreateAlreadyJoinedPlayerCard();
         
         _ = SubscribeToLobbyEvents(lobby);
+    }
+
+    private void UpdateStartGameButton()
+    {
+        if (isHostOfLobby)
+        {
+            startGameButton.gameObject.SetActive(true);
+
+            bool isOnlyOnePlayer = lobbyPlayerIndex.Count == 1;
+
+            bool isAllPlayersReady = true;
+
+            foreach (var player in currentLobby.Players)
+            {
+                if(player.Data.TryGetValue(ConstKeys.ReadyState, out var readyValue))
+                {
+                    if (readyValue.Value != ConstKeys.ReadyValue)
+                    {
+                        isAllPlayersReady = false;
+                        break;
+                    }
+                }
+            }
+            
+            startGameButton.interactable = !isOnlyOnePlayer && isAllPlayersReady;
+        }
+        else
+        {
+            startGameButton.gameObject.SetActive(false);
+        }
     }
 
     public void StartLobbyHeartBeats()
@@ -171,8 +205,17 @@ public class LobbyInfoPanel : MonoBehaviour
     {
         try
         {
-            //Debug.Log("OnLobbyDataChanged called");
             lobbyChanges.ApplyToLobby(currentLobby);
+
+            if (lobbyChanges.PlayerData.Changed || lobbyChanges.PlayerJoined.Changed || lobbyChanges.PlayerLeft.Changed)
+            {
+                UpdateStartGameButton();
+            }
+
+            if (lobbyChanges.Data.Changed)
+            {
+                JoinRelayFromLobbyCode();
+            }
         }
         catch (Exception e)
         {
@@ -248,6 +291,7 @@ public class LobbyInfoPanel : MonoBehaviour
         {
             isHostOfLobby = true;
             StartLobbyHeartBeats();
+            UpdateStartGameButton();
         }
     }
 
@@ -369,9 +413,7 @@ public class LobbyInfoPanel : MonoBehaviour
             foreach (var updatedValue in updatedPlayers)
             {
                 //for updating ready status
-                
                 //Debug.Log($"OnLobbyPlayerDataChanged key {updatedValue.Key}");
-
                 // foreach (var changes in updatedValue.Value)
                 // {
                 //     Debug.Log($"OnLobbyPlayerDataChanged data : key {changes.Key} : value {changes.Value.Value.Value}");
@@ -387,6 +429,84 @@ public class LobbyInfoPanel : MonoBehaviour
         catch (Exception e)
         {
             Debug.LogError("OnLobbyPlayerDataChanged Error :"+e);
+        }
+    }
+
+    public void OnClickStartGame()
+    {
+        startGameButton.interactable = false;
+        CreateRelayCodeAndStartGame();
+    }
+
+    private async void CreateRelayCodeAndStartGame()
+    {
+
+        string newLobbyCode = await RelayManager.instance.CreateRelay(currentLobby.Players.Count);
+
+        if (newLobbyCode == "0")
+        {
+            Debug.LogError("Cant Create Relay Code");
+            startGameButton.interactable = true;
+            return;
+        }
+        
+        UpdateLobbyOptions newLobbyOptions = new UpdateLobbyOptions();
+        newLobbyOptions.Data = new Dictionary<string, DataObject>()
+        {
+            { ConstKeys.LobbyRelayCodeKey, new DataObject(DataObject.VisibilityOptions.Member, newLobbyCode) }
+        };
+
+        try
+        {
+            GameManager.instance.WaitForOtherClients();
+            GameManager.instance.SetPlayerData(currentLobby);
+
+            await LobbyService.Instance.UpdateLobbyAsync(currentLobby.Id,newLobbyOptions);
+        
+            startGameButton.interactable = true;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e);
+            throw;
+        }
+    }
+
+    private async void JoinRelayFromLobbyCode()
+    {
+        if(isHostOfLobby) return;
+        
+        if (!currentLobby.Data.TryGetValue(ConstKeys.LobbyRelayCodeKey, out DataObject dataObject))
+        {
+            Debug.LogError("Cant Parse Lobby Data");
+            return;
+        }
+
+        string newLobbyCode = dataObject.Value;
+        
+        if (newLobbyCode == "0")
+        {
+            Debug.LogError("Cant Create Relay Code");
+            startGameButton.interactable = true;
+            return;
+        }
+
+        bool isInRelay = await RelayManager.instance.JoinRelay(newLobbyCode);
+
+        Debug.Log("Is in Relay "+isInRelay);
+        
+        if (isInRelay)
+        {
+            try
+            {
+               NetworkManager.Singleton.StartClient();
+               GameManager.instance.SetPlayerData(currentLobby: currentLobby);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+                throw;
+            }
         }
     }
 
