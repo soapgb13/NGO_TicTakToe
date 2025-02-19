@@ -9,6 +9,7 @@ using UnityEngine.UI;
 
 public class SetPlayerNamePopup : MonoBehaviour
 {
+    [SerializeField] private TMP_Text playerNameInMenuText;
     [SerializeField] private GameObject playerNamePopup;
     [SerializeField] private TMP_InputField playerNameText;
     [SerializeField] private Button okButton;
@@ -40,6 +41,10 @@ public class SetPlayerNamePopup : MonoBehaviour
             okButton.interactable = false;
             playerNamePopup.SetActive(true);
         }
+        else
+        {
+            playerNameInMenuText.text = AuthenticationService.Instance.PlayerName;
+        }
     }
 
     public void OpenNameChangePopup()
@@ -58,7 +63,16 @@ public class SetPlayerNamePopup : MonoBehaviour
     private async void UpdateName()
     {
         okButton.interactable = false;
-        await AuthenticationService.Instance.UpdatePlayerNameAsync(newPlayerName);
+        try
+        {
+            await AuthenticationService.Instance.UpdatePlayerNameAsync(newPlayerName);
+            playerNameInMenuText.text = AuthenticationService.Instance.PlayerName;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e);
+            throw;
+        }
         playerNamePopup.SetActive(false);
     }
 
@@ -75,6 +89,9 @@ public class SetPlayerNamePopup : MonoBehaviour
         okButton.interactable = true;
     }
 
-    
+    public void OnClickCancelButton()
+    {
+        playerNamePopup.SetActive(false);
+    }
     
 }
